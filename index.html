@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PE Standards Venn Diagram | SHAPE America vs. NC 2024</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: #f0f4f8; min-height: 100vh; }
+    button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const ALL_ITEMS = [
+      { id: "s1", text: '"Physical literacy journey" serves as the central organizing framework', correct: "shape" },
+      { id: "s2", text: "Includes PreK students in the grade span (PreK through 2nd grade)", correct: "shape" },
+      { id: "s3", text: "Uses grade-span learning indicators that cover multiple grades together", correct: "shape" },
+      { id: "s4", text: "Has a dedicated standard (Standard 3) specifically for social skills through movement", correct: "shape" },
+      { id: "s5", text: "Explicitly frames equity, inclusion, and access as core values throughout", correct: "shape" },
+      { id: "s6", text: "Includes students demonstrating the choice to engage in physical activity", correct: "shape" },
+      { id: "s7", text: "Emphasizes finding joy and cultivating a love of movement", correct: "shape" },
+      { id: "n1", text: "Health-Related Fitness (HF) is a distinct, separate strand", correct: "nc" },
+      { id: "n2", text: "Names all five fitness components by category starting at Kindergarten", correct: "nc" },
+      { id: "n3", text: "Has separate grade-level objectives for Kindergarten, 1st, and 2nd grade individually", correct: "nc" },
+      { id: "n4", text: 'Includes "actively engage in physical education class" as an explicit objective', correct: "nc" },
+      { id: "n5", text: "Uses coded alphanumeric objective numbering (e.g., PE.K.MS.1.1)", correct: "nc" },
+      { id: "n6", text: "Addresses identifying physical activity opportunities outside of PE class", correct: "nc" },
+      { id: "n7", text: "Organized into four explicitly labeled strands: MS, MC, HF, and PR", correct: "nc" },
+      { id: "b1", text: "Develops locomotor skills (walk, run, jump, hop, skip, gallop, leap, slide)", correct: "both" },
+      { id: "b2", text: "Develops manipulative skills (throwing, catching, dribbling, striking, kicking)", correct: "both" },
+      { id: "b3", text: "Addresses movement concepts including space, pathways, levels, and force/effort", correct: "both" },
+      { id: "b4", text: "Uses feedback from teachers and peers to improve motor skill performance", correct: "both" },
+      { id: "b5", text: "Addresses responsible, safe, and cooperative behavior with peers", correct: "both" },
+      { id: "b6", text: "Includes rhythmic movement and responding to a beat or music", correct: "both" },
+    ];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const ZONES = [
+      {
+        id: "shape",
+        title: "SHAPE America Only",
+        subtitle: "2024 National Standards (PreK–2)",
+        headerBg: "linear-gradient(135deg, #1d4ed8, #2563eb)",
+        zoneBg: "#eff6ff",
+        borderColor: "#93c5fd",
+        emptyText: "Drop SHAPE-only features here",
+      },
+      {
+        id: "both",
+        title: "Both Standards",
+        subtitle: "Shared Features",
+        headerBg: "linear-gradient(135deg, #6d28d9, #7c3aed)",
+        zoneBg: "#f5f3ff",
+        borderColor: "#c4b5fd",
+        emptyText: "Drop shared features here",
+      },
+      {
+        id: "nc",
+        title: "NC Only",
+        subtitle: "2024 NC Essential Standards (K–2)",
+        headerBg: "linear-gradient(135deg, #991b1b, #b91c1c)",
+        zoneBg: "#fff1f2",
+        borderColor: "#fca5a5",
+        emptyText: "Drop NC-only features here",
+      },
+    ];
+
+    function CardChip({ item, placement, selected, submitted, showAnswers, onDragStart, onClick }) {
+      const isCorrect = submitted ? placement === item.correct : null;
+      const zoneLabels = { shape: "SHAPE America Only", both: "Both Standards", nc: "NC Only" };
+
+      let bg = "white";
+      let border = "1.5px solid #e2e8f0";
+      let shadow = "0 1px 4px rgba(0,0,0,0.07)";
+      let cursor = submitted ? "default" : "grab";
+
+      if (selected) {
+        border = "2px solid #f59e0b";
+        shadow = "0 0 0 3px #fde68a, 0 2px 8px rgba(0,0,0,0.12)";
+        bg = "#fffbeb";
+        cursor = "pointer";
+      } else if (submitted) {
+        bg = isCorrect ? "#f0fdf4" : "#fef2f2";
+        border = `1.5px solid ${isCorrect ? "#86efac" : "#fca5a5"}`;
+      }
+
+      return (
+        <div
+          draggable={!submitted}
+          onDragStart={onDragStart}
+          onClick={onClick}
+          style={{
+            background: bg, border, borderRadius: 8, padding: "7px 11px",
+            fontSize: 13, lineHeight: 1.5, cursor, userSelect: "none",
+            boxShadow: shadow, transition: "box-shadow 0.15s, background 0.15s",
+          }}
+        >
+          {submitted && (
+            <span style={{ color: isCorrect ? "#16a34a" : "#dc2626", fontWeight: 800, marginRight: 4 }}>
+              {isCorrect ? "✓" : "✗"}
+            </span>
+          )}
+          {item.text}
+          {submitted && showAnswers && !isCorrect && (
+            <div style={{ fontSize: 11, color: "#7c3aed", marginTop: 3, fontStyle: "italic", fontWeight: 600 }}>
+              → Correct section: {zoneLabels[item.correct]}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function DropZone({ zone, items, selected, submitted, showAnswers, onDragStart, onDrop, onZoneClick, onCardClick }) {
+      const hasSelected = !!selected;
+      return (
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={onDrop}
+          onClick={onZoneClick}
+          style={{
+            border: `2px solid ${hasSelected && !submitted ? "#f59e0b" : zone.borderColor}`,
+            borderRadius: 14, overflow: "hidden", minHeight: 220,
+            background: zone.zoneBg,
+            cursor: hasSelected && !submitted ? "copy" : "default",
+            transition: "border-color 0.2s",
+            boxShadow: hasSelected && !submitted ? "0 0 0 3px #fde68a55" : "none",
+          }}
+        >
+          <div style={{
+            background: zone.headerBg, padding: "10px 14px",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 13, color: "white" }}>{zone.title}</div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.8)", marginTop: 1 }}>{zone.subtitle}</div>
+            </div>
+            {items.length > 0 && (
+              <span style={{
+                background: "rgba(255,255,255,0.2)", color: "white",
+                borderRadius: 20, padding: "2px 9px", fontSize: 12, fontWeight: 700,
+              }}>
+                {items.length}
+              </span>
+            )}
+          </div>
+          <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 7 }}>
+            {items.map((item) => (
+              <CardChip
+                key={item.id}
+                item={item}
+                placement={zone.id}
+                selected={false}
+                submitted={submitted}
+                showAnswers={showAnswers}
+                onDragStart={(e) => { e.stopPropagation(); onDragStart(item.id); }}
+                onClick={(e) => { e.stopPropagation(); if (!submitted) onCardClick(item.id); }}
+              />
+            ))}
+            {items.length === 0 && (
+              <div style={{ color: "#d1d5db", fontSize: 12, textAlign: "center", marginTop: 30, pointerEvents: "none" }}>
+                {zone.emptyText}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [items] = useState(() => shuffle(ALL_ITEMS));
+      const [placements, setPlacements] = useState(() => {
+        const p = {};
+        ALL_ITEMS.forEach((i) => { p[i.id] = "bank"; });
+        return p;
+      });
+      const [dragId, setDragId] = useState(null);
+      const [selected, setSelected] = useState(null);
+      const [submitted, setSubmitted] = useState(false);
+      const [showAnswers, setShowAnswers] = useState(false);
+      const [copyStatus, setCopyStatus] = useState("idle");
+
+      const getZoneItems = (zone) => items.filter((i) => placements[i.id] === zone);
+      const placedCount = ALL_ITEMS.filter((i) => placements[i.id] !== "bank").length;
+      const score = submitted ? ALL_ITEMS.filter((i) => placements[i.id] === i.correct).length : 0;
+      const pct = submitted ? Math.round((score / ALL_ITEMS.length) * 100) : 0;
+
+      const place = (id, zone) => setPlacements((prev) => ({ ...prev, [id]: zone }));
+
+      const handleDrop = (e, zone) => {
+        e.preventDefault();
+        if (dragId) { place(dragId, zone); setDragId(null); }
+      };
+
+      const handleCardClick = (id) => {
+        if (submitted) return;
+        setSelected((prev) => (prev === id ? null : id));
+      };
+
+      const handleZoneClick = (zone) => {
+        if (selected && !submitted) { place(selected, zone); setSelected(null); }
+      };
+
+      const reset = () => {
+        const p = {};
+        ALL_ITEMS.forEach((i) => { p[i.id] = "bank"; });
+        setPlacements(p);
+        setSubmitted(false);
+        setShowAnswers(false);
+        setSelected(null);
+        setCopyStatus("idle");
+      };
+
+      const copyResults = async () => {
+        const timestamp = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+        const zoneLabels = { shape: "SHAPE America Only", both: "Both Standards", nc: "NC Only", bank: "Not Placed" };
+
+        const sections = ["shape", "both", "nc"].map((zone) => {
+          const placed = ALL_ITEMS.filter((i) => placements[i.id] === zone);
+          const lines = placed.map((item) => {
+            const correct = item.correct === zone;
+            return `  ${correct ? "✓" : "✗"} ${item.text}${!correct ? ` [Should be: ${zoneLabels[item.correct]}]` : ""}`;
+          });
+          return `── ${zoneLabels[zone]} ──\n${lines.length > 0 ? lines.join("\n") : "  (nothing placed here)"}`;
+        });
+
+        const unplaced = ALL_ITEMS.filter((i) => placements[i.id] === "bank");
+        const unplacedSection = unplaced.length > 0
+          ? `\n── Not Placed ──\n${unplaced.map((i) => `  - ${i.text}`).join("\n")}`
+          : "";
+
+        const text = [
+          "═══════════════════════════════════════════════",
+          "  PE STANDARDS VENN DIAGRAM — STUDENT RESULTS",
+          "═══════════════════════════════════════════════",
+          `  Completed: ${timestamp}`,
+          `  Score: ${score}/${ALL_ITEMS.length} (${pct}%)`,
+          "",
+          sections.join("\n\n"),
+          unplacedSection,
+          "",
+          "═══════════════════════════════════════════════",
+          "  Sources: SHAPE America National PE Standards (2024)",
+          "           NC Standard Course of Study, PE K–9 (2024)",
+          "═══════════════════════════════════════════════",
+        ].join("\n");
+
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopyStatus("copied");
+          setTimeout(() => setCopyStatus("idle"), 3000);
+        } catch {
+          // Fallback: show textarea
+          setCopyStatus("fallback");
+          window._resultText = text;
+        }
+      };
+
+      return (
+        <div style={{ fontFamily: "'Nunito', sans-serif", background: "#f0f4f8", minHeight: "100vh", padding: "20px 16px" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+
+            {/* HEADER */}
+            <div style={{ textAlign: "center", marginBottom: 22 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <span style={{ fontSize: 28 }}>🎯</span>
+                <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "#1e293b", margin: 0 }}>
+                  PE Standards Comparison
+                </h1>
+              </div>
+              <p style={{ color: "#475569", fontSize: 14, margin: "0 0 4px 0" }}>
+                <strong>2024 SHAPE America National PE Standards (PreK–2)</strong> vs.{" "}
+                <strong>2024 NC Essential Standards for PE (K–2)</strong>
+              </p>
+              <p style={{ color: "#94a3b8", fontSize: 12.5, margin: 0 }}>
+                Drag each card — or click to select, then click a section — to place it in the correct part of the Venn diagram.
+              </p>
+            </div>
+
+            {/* VENN ILLUSTRATION */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+              <svg width="340" height="80" viewBox="0 0 340 80">
+                <ellipse cx="115" cy="40" rx="100" ry="34" fill="#dbeafe" stroke="#93c5fd" strokeWidth="2" opacity="0.8" />
+                <ellipse cx="225" cy="40" rx="100" ry="34" fill="#fee2e2" stroke="#fca5a5" strokeWidth="2" opacity="0.8" />
+                <text x="68" y="44" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1d4ed8" fontFamily="Nunito">SHAPE Only</text>
+                <text x="170" y="39" textAnchor="middle" fontSize="10" fontWeight="700" fill="#6d28d9" fontFamily="Nunito">Both</text>
+                <text x="272" y="44" textAnchor="middle" fontSize="11" fontWeight="700" fill="#991b1b" fontFamily="Nunito">NC Only</text>
+              </svg>
+            </div>
+
+            {/* SCORE BANNER */}
+            {submitted && (
+              <div style={{
+                background: pct >= 90 ? "#dcfce7" : pct >= 70 ? "#fef9c3" : "#fee2e2",
+                border: `1.5px solid ${pct >= 90 ? "#86efac" : pct >= 70 ? "#fde68a" : "#fca5a5"}`,
+                borderRadius: 14, padding: "13px 20px", marginBottom: 18,
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                flexWrap: "wrap", gap: 10,
+              }}>
+                <div>
+                  <span style={{ fontWeight: 800, fontSize: 22, color: "#1e293b" }}>{score}/{ALL_ITEMS.length}</span>
+                  <span style={{ marginLeft: 8, fontWeight: 700, fontSize: 16, color: "#1e293b" }}>({pct}%)</span>
+                  <span style={{ marginLeft: 12, color: "#64748b", fontSize: 14 }}>
+                    {pct === 100 ? "🎉 Perfect!" : pct >= 85 ? "👏 Great work!" : pct >= 70 ? "💪 Nice effort!" : "📚 Keep reviewing!"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button onClick={copyResults} style={{
+                    background: copyStatus === "copied" ? "#16a34a" : copyStatus === "error" ? "#dc2626" : "#0f172a",
+                    color: "white", border: "none", borderRadius: 8,
+                    padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                    transition: "background 0.2s",
+                  }}>
+                    {copyStatus === "copied" ? "✓ Copied!" : copyStatus === "error" ? "⚠ See below" : "📋 Copy Results"}
+                  </button>
+                  <button onClick={() => setShowAnswers((v) => !v)} style={{
+                    background: "#6366f1", color: "white", border: "none", borderRadius: 8,
+                    padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  }}>
+                    {showAnswers ? "Hide Hints" : "Show Correct Zones"}
+                  </button>
+                  <button onClick={reset} style={{
+                    background: "#64748b", color: "white", border: "none", borderRadius: 8,
+                    padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  }}>
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* FALLBACK TEXTAREA */}
+            {copyStatus === "fallback" && (
+              <div style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 12.5, color: "#92400e", background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", marginBottom: 8 }}>
+                  ⚠ Clipboard access was blocked. Select all the text below and copy it manually (Ctrl+A / Cmd+A, then Ctrl+C / Cmd+C).
+                </p>
+                <textarea
+                  readOnly
+                  onClick={(e) => e.target.select()}
+                  defaultValue={window._resultText}
+                  style={{
+                    width: "100%", height: 260, fontFamily: "monospace", fontSize: 12,
+                    padding: 12, border: "1.5px solid #cbd5e1", borderRadius: 8,
+                    background: "#f8fafc", resize: "vertical",
+                  }}
+                />
+              </div>
+            )}
+
+            {/* SELECTED CARD INDICATOR */}
+            {selected && !submitted && (
+              <div style={{
+                background: "#fefce8", border: "1.5px solid #fde68a",
+                borderRadius: 10, padding: "8px 16px", marginBottom: 12,
+                fontSize: 13, color: "#854d0e", fontWeight: 600,
+              }}>
+                ✋ Card selected — click a section below to place it, or click the card again to deselect.
+              </div>
+            )}
+
+            {/* CARD BANK */}
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleDrop(e, "bank")}
+              onClick={() => selected && handleZoneClick("bank")}
+              style={{
+                background: "white",
+                border: `2px dashed ${selected ? "#fbbf24" : "#cbd5e1"}`,
+                borderRadius: 14, padding: "14px 14px 10px", marginBottom: 16,
+                minHeight: 70, cursor: selected ? "copy" : "default",
+                transition: "border-color 0.2s",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1 }}>
+                  Card Bank
+                </span>
+                <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                  {placedCount}/{ALL_ITEMS.length} placed
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {getZoneItems("bank").map((item) => (
+                  <CardChip
+                    key={item.id}
+                    item={item}
+                    placement="bank"
+                    selected={selected === item.id}
+                    submitted={submitted}
+                    showAnswers={showAnswers}
+                    onDragStart={() => { setDragId(item.id); setSelected(null); }}
+                    onClick={() => handleCardClick(item.id)}
+                  />
+                ))}
+                {getZoneItems("bank").length === 0 && (
+                  <span style={{ color: "#cbd5e1", fontSize: 13, paddingTop: 4 }}>All cards placed! ✓</span>
+                )}
+              </div>
+            </div>
+
+            {/* VENN ZONES */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 0.9fr 1fr", gap: 12, marginBottom: 22 }}>
+              {ZONES.map((zone) => (
+                <DropZone
+                  key={zone.id}
+                  zone={zone}
+                  items={getZoneItems(zone.id)}
+                  selected={selected}
+                  submitted={submitted}
+                  showAnswers={showAnswers}
+                  onDragStart={(id) => { setDragId(id); setSelected(null); }}
+                  onDrop={(e) => handleDrop(e, zone.id)}
+                  onZoneClick={() => handleZoneClick(zone.id)}
+                  onCardClick={handleCardClick}
+                />
+              ))}
+            </div>
+
+            {/* SUBMIT */}
+            {!submitted && (
+              <div style={{ textAlign: "center", paddingBottom: 20 }}>
+                <button
+                  onClick={() => setSubmitted(true)}
+                  disabled={placedCount === 0}
+                  style={{
+                    background: placedCount === 0 ? "#cbd5e1" : "linear-gradient(135deg, #1e3a5f, #2563eb)",
+                    color: "white", border: "none", borderRadius: 12,
+                    padding: "13px 40px", fontSize: 15, fontWeight: 800,
+                    cursor: placedCount === 0 ? "default" : "pointer",
+                    boxShadow: placedCount === 0 ? "none" : "0 4px 16px rgba(37,99,235,0.35)",
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  Check My Answers →
+                </button>
+                {placedCount < ALL_ITEMS.length && (
+                  <p style={{ color: "#94a3b8", fontSize: 12, marginTop: 8 }}>
+                    {ALL_ITEMS.length - placedCount} card{ALL_ITEMS.length - placedCount !== 1 ? "s" : ""} still in the bank
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* FOOTER */}
+            <p style={{ textAlign: "center", color: "#cbd5e1", fontSize: 11, paddingBottom: 16 }}>
+              Sources: SHAPE America National Physical Education Standards (2024) · NC Standard Course of Study, Physical Education K–9 (2024)
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
